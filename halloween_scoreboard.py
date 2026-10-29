@@ -92,23 +92,17 @@ text = {
 	'background-color':'#F9B233'
 }
 
-st.title("CrossFit Bryggen Halloween Games 2025")
+st.title("CrossFit Bryggen Halloween Games 2026")
 
 st.image(image,width=100)
 
 option = st.selectbox(
 	'Select leaderboard from the dropdown menu', (
-		'Leaderboard Female', 'Leaderboard Male', 'Workout 1 Female', 'Workout 1 Male', 
-		'Workout 2a Female', 'Workout 2a Male',
-		'Workout 2b Female', 'Workout 2b Male',
-		'Workout 3 Female', 'Workout 3 Male'
+		'Overall Leaderboard', 'Workout 1', 'Workout 2', 'Workout 3a', 'Workout 3b', 'Finale'
 	)
 )
-if option in ['Leaderboard Female', 'Leaderboard Male']:
-	if option == 'Leaderboard Female':
-		sheet = 'ScoreF'
-	else:
-		sheet = 'ScoreM'
+if option in ['Overall Leaderboard']:
+	sheet = 'Score'
 	try:
 		df = pd.read_excel(file, index_col=0, sheet_name = sheet).set_index(['Team'])
 		score_matrix = pd.read_excel(file, index_col=0, sheet_name = 'ScoreMatrix').to_dict()
@@ -116,49 +110,73 @@ if option in ['Leaderboard Female', 'Leaderboard Male']:
 		df = df.fillna(0)
 		for team in df.index:
 			r1 = df['Rep1'][team]
-			r2 = int(r1/51)
-			r3 = r1 - r2*51
-			df.loc[team,'WODdisplay1']= f'{r2} rounds + {r3} reps'
+			if (r1 == 1260):
+				r2 = df['Minute1'][team]
+				r3 = df['Second1'][team]
+				df.loc[team,'WODdisplay1']= f'{int(r2):02d}:{int(r3):02d}'
+			else:
+				df.loc[team,'WODdisplay1'] = f'TC ({r1} reps)'
 		for team in df.index:
-			r1 = df['Bench1'][team]
-			r2 = df['Bench2'][team]
-			r3 = r1+r2
-			df.loc[team,'WODdisplay2']= f'{r3} kg = {r1} kg + {r2} kg'
+			r1 = df['T2B'][team]
+			r2 = df['Erg'][team]
+			r3 = df['WB'][team]
+			r4 = r1+r2+r3
+			df.loc[team,'WODdisplay2']= f'{r4} pts = {r1} T2B + {r2} cals + {r3} Wallballs'
 		for team in df.index:
-			r1 = df['Rep3'][team]
-			df.loc[team,'WODdisplay3']= f'{r1} burpees'
+			r1 = df['Lift1'][team]
+			r2 = df['Lift2'][team]
+			r3 = r1 + r2
+			df.loc[team,'WODdisplay3']= f'{r3}kg = {r1}kg + {r2}kg'
 		for team in df.index:
 			r1 = df['Rep4'][team]
-			if (r1 == 1880 and option == 'Male Leaderboard') or (r1 == 1580 and option == 'Female Leaderboard'):
-				r2 = df['Minute3'][team]
-				r3 = df['Second3'][team]
-				df.loc[team,'WODdisplay4']= f'{r2}:{r3}'
+			if (r1 == 120):
+				r2 = df['Minute4'][team]
+				r3 = df['Second4'][team]
+				df.loc[team,'WODdisplay4']= f'{int(r2):02d}:{int(r3):02d}'
 			else:
 				df.loc[team,'WODdisplay4'] = f'TC ({r1} reps)'
+		for team in df.index:
+			r1 = df['Rep5'][team]
+			if (r1 == 0):
+				df.loc[team,'WODdisplay5']= f'--'
+			elif (r1 == 400):
+				r2 = df['Minute5'][team]
+				r3 = df['Second5'][team]
+				df.loc[team,'WODdisplay5']= f'{int(r2):02d}:{int(r3):02d}'
+			else:
+				df.loc[team,'WODdisplay5'] = f'TC ({int(r1)} reps)'
 	except:
 		df = pd.read_excel(file, index_col=0, sheet_name = sheet)
 		st.text(f'Scoreboard is not available yet')
 		st.table(df[['Team']].style.set_table_styles(headers).set_properties(**text))
 	try:
 		d, s, w = DoScoreBoard(df, score_matrix, False)
-		st.subheader("Female Leaderboard")
-		st.table(d.drop(columns=['WorstRound','BestRound']).style.set_table_styles(headers).set_properties(**text))
+		st.subheader("Overall Leaderboard")
+		st.table(
+			d.drop(columns=['WorstRound', 'BestRound'])
+			.style
+			.set_table_styles(headers)
+			.set_properties(**text)
+			.format({'Workout 5': lambda x: '--' if x == 0 else str(x)})
+		)
 	except Exception as e:
 		df = pd.read_excel(file, index_col=0, sheet_name = sheet)
 		st.text(f'Scoreboard is not available yet')
 		st.table(df[['Team']].style.set_table_styles(headers).set_properties(**text))
 
 
-elif option in ['Workout 1 Female', 'Workout 2a Female', 'Workout 2b Female', 'Workout 3 Female']:
-	sheet = 'ScoreF'
-	if option ==  'Workout 1 Female':
+elif option in ['Workout 1', 'Workout 2', 'Workout 3a', 'Workout 3b', 'Finale']:
+	sheet = 'Score'
+	if option ==  'Workout 1':
 		nwod = 1
-	elif option ==  'Workout 2a Female':
+	elif option ==  'Workout 2':
 		nwod = 2
-	elif option ==  'Workout 2b Female':
+	elif option ==  'Workout 3a':
 		nwod = 3
-	elif option ==  'Workout 3 Female':
+	elif option ==  'Workout 3b':
 		nwod = 4
+	elif option ==  'Finale':
+		nwod = 5
 	try:
 		df = pd.read_excel(file, index_col=0, sheet_name = sheet).set_index(['Team'])
 		score_matrix = pd.read_excel(file, index_col=0, sheet_name = 'ScoreMatrix').to_dict()
@@ -166,84 +184,47 @@ elif option in ['Workout 1 Female', 'Workout 2a Female', 'Workout 2b Female', 'W
 		df = df.fillna(0)
 		for team in df.index:
 			r1 = df['Rep1'][team]
-			r2 = int(r1/51)
-			r3 = r1 - r2*51
-			df.loc[team,'WODdisplay1']= f'{r2} rounds + {r3} reps'
+			if (r1 == 1260):
+				r2 = df['Minute1'][team]
+				r3 = df['Second1'][team]
+				df.loc[team,'WODdisplay1']= f'{int(r2):02d}:{int(r3):02d}'
+			else:
+				df.loc[team,'WODdisplay1'] = f'TC ({r1} reps)'
 		for team in df.index:
-			r1 = df['Bench1'][team]
-			r2 = df['Bench2'][team]
-			r3 = r1+r2
-			df.loc[team,'WODdisplay2']= f'{r3} kg = {r1} kg + {r2} kg'
+			r1 = df['T2B'][team]
+			r2 = df['Erg'][team]
+			r3 = df['WB'][team]
+			r4 = r1+r2+r3
+			df.loc[team,'WODdisplay2']= f'{r4} pts = {r1} T2B + {r2} cals + {r3} Wallballs'
 		for team in df.index:
-			r1 = df['Rep3'][team]
-			df.loc[team,'WODdisplay3']= f'{r1} burpees'
+			r1 = df['Lift1'][team]
+			r2 = df['Lift2'][team]
+			r3 = r1 + r2
+			df.loc[team,'WODdisplay3']= f'{r3}kg = {r1}kg + {r2}kg'
 		for team in df.index:
 			r1 = df['Rep4'][team]
-			if (r1 == 1880 and sheet == 'ScoreM' ) or (r1 == 1580 and sheet == 'ScoreF'):
+			if (r1 == 120):
 				r2 = df['Minute4'][team]
 				r3 = df['Second4'][team]
-				df.loc[team,'WODdisplay4']= f'{r2:02d}:{r3:02d}'
+				df.loc[team,'WODdisplay4']= f'{int(r2):02d}:{int(r3):02d}'
 			else:
 				df.loc[team,'WODdisplay4'] = f'TC ({r1} reps)'
+		for team in df.index:
+			r1 = df['Rep5'][team]
+			if (r1 == 0):
+				df.loc[team,'WODdisplay5']= f'--'
+			elif (r1 == 400):
+				r2 = df['Minute5'][team]
+				r3 = df['Second5'][team]
+				df.loc[team,'WODdisplay5']= f'{int(r2):02d}:{int(r3):02d}'
+			else:
+				df.loc[team,'WODdisplay5'] = f'TC ({int(r1)} reps)'
 	except:
 		df = pd.read_excel(file, index_col=0, sheet_name = sheet)
 		st.text(f'Scoreboard is not available yet')
 		st.table(df[['Team']].style.set_table_styles(headers).set_properties(**text))
 	try:
-		sheet = 'ScoreF'
-		d, s, w = DoScoreBoard(df, score_matrix, False)
-		w = w.sort_values(by=[f'points{nwod}'], ascending=False)
-		w['CurrentRank'] = w[f'points{nwod}'].rank(axis=0, method='min', ascending=False)
-		dis_w = w[['CurrentRank', f'WODdisplay{nwod}']]
-		dis_w.columns = ['Rank', option]
-		dis_w['Rank'] = dis_w['Rank'].astype(int)
-		st.subheader(option)
-		st.table(dis_w.style.set_table_styles(headers).set_properties(**text))
-	except:
-		st.text(f'Scoreboard for {option} is not available yet')
-
-elif option in ['Workout 1 Male', 'Workout 2a Male', 'Workout 2b Male', 'Workout 3 Male']:
-	sheet = 'ScoreM'
-	if option ==  'Workout 1 Male':
-		nwod = 1
-	elif option ==  'Workout 2a Male':
-		nwod = 2
-	elif option ==  'Workout 2b Male':
-		nwod = 3
-	elif option ==  'Workout 3 Male':
-		nwod = 4
-	try:
-		df = pd.read_excel(file, index_col=0, sheet_name = sheet).set_index(['Team'])
-		score_matrix = pd.read_excel(file, index_col=0, sheet_name = 'ScoreMatrix').to_dict()
-		score_matrix['points'][0]=0
-		df = df.fillna(0)
-		for team in df.index:
-			r1 = df['Rep1'][team]
-			r2 = int(r1/51)
-			r3 = r1 - r2*51
-			df.loc[team,'WODdisplay1']= f'{r2} rounds + {r3} reps'
-		for team in df.index:
-			r1 = df['Bench1'][team]
-			r2 = df['Bench2'][team]
-			r3 = r1+r2
-			df.loc[team,'WODdisplay2']= f'{r3} kg = {r1} kg + {r2} kg'
-		for team in df.index:
-			r1 = df['Rep3'][team]
-			df.loc[team,'WODdisplay3']= f'{r1} burpees'
-		for team in df.index:
-			r1 = df['Rep4'][team]
-			if (r1 == 1880 and sheet == 'ScoreM' ) or (r1 == 1580 and sheet == 'ScoreF'):
-				r2 = df['Minute4'][team]
-				r3 = df['Second4'][team]
-				df.loc[team,'WODdisplay4']= f'{r2:02d}:{r3:02d}'
-			else:
-				df.loc[team,'WODdisplay4'] = f'TC ({r1} reps)'
-	except:
-		df = pd.read_excel(file, index_col=0, sheet_name = sheet)
-		st.text(f'Scoreboard is not available yet')
-		st.table(df[['Team']].style.set_table_styles(headers).set_properties(**text))
-	try:
-		sheet = 'ScoreF'
+		sheet = 'Score'
 		d, s, w = DoScoreBoard(df, score_matrix, False)
 		w = w.sort_values(by=[f'points{nwod}'], ascending=False)
 		w['CurrentRank'] = w[f'points{nwod}'].rank(axis=0, method='min', ascending=False)
