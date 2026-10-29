@@ -152,12 +152,20 @@ if option in ['Overall Leaderboard']:
 	try:
 		d, s, w = DoScoreBoard(df, score_matrix, False)
 		st.subheader("Overall Leaderboard")
+		d = d.rename(columns={'Workout 3': 'Workout 3a'})
+		d = d.rename(columns={'Workout 4': 'Workout 3b'})
+		d = d.rename(columns={'Workout 5': 'Finale'})
+		d['Qualifier Total'] = d['Workout 1'] + d['Workout 2'] + d['Workout 3a'] + d['Workout 3b']
+		cols = d.columns.tolist()
+		cols.remove('Qualifier Total')
+		cols.insert(cols.index('Finale'), 'Qualifier Total')
+		d = d[cols]
 		st.table(
 			d.drop(columns=['WorstRound', 'BestRound'])
 			.style
 			.set_table_styles(headers)
 			.set_properties(**text)
-			.format({'Workout 5': lambda x: '--' if x == 0 else str(x)})
+			.format({'Finale': lambda x: '--' if x == 0 else str(x)})
 		)
 	except Exception as e:
 		df = pd.read_excel(file, index_col=0, sheet_name = sheet)
