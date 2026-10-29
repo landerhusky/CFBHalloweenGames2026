@@ -1,0 +1,7 @@
+openpyxl
+streamlit
+pandas
+numpy
+PIL
+re
+math
