@@ -155,10 +155,14 @@ if option in ['Overall Leaderboard']:
 		d = d.rename(columns={'Workout 3': 'Workout 3a'})
 		d = d.rename(columns={'Workout 4': 'Workout 3b'})
 		d = d.rename(columns={'Workout 5': 'Finale'})
-		d['Qualifier Total'] = d['Workout 1'] + d['Workout 2'] + d['Workout 3a'] + d['Workout 3b']
+		qual_cols = [c for c in ['Workout 1', 'Workout 2', 'Workout 3a', 'Workout 3b'] if c in d.columns]
+		d['Qualifier Total'] = d[qual_cols].sum(axis=1)
 		cols = d.columns.tolist()
 		cols.remove('Qualifier Total')
-		cols.insert(cols.index('Finale'), 'Qualifier Total')
+		if 'Finale' in cols:
+			cols.insert(cols.index('Finale'), 'Qualifier Total')
+		else:
+			cols.insert(cols.index('Total'), 'Qualifier Total')
 		d = d[cols]
 		st.table(
 			d.drop(columns=['WorstRound', 'BestRound'])
