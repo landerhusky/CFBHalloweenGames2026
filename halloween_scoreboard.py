@@ -115,7 +115,7 @@ if option in ['Overall Leaderboard']:
 				r3 = df['Second1'][team]
 				df.loc[team,'WODdisplay1']= f'{int(r2):02d}:{int(r3):02d}'
 			else:
-				df.loc[team,'WODdisplay1'] = f'TC ({r1} reps)'
+				df.loc[team,'WODdisplay1'] = f'TC ({int(r1)} reps)'
 		for team in df.index:
 			r1 = df['T2B'][team]
 			r2 = df['Erg'][team]
@@ -201,7 +201,7 @@ elif option in ['Workout 1', 'Workout 2', 'Workout 3a', 'Workout 3b', 'Finale']:
 				r3 = df['Second1'][team]
 				df.loc[team,'WODdisplay1']= f'{int(r2):02d}:{int(r3):02d}'
 			else:
-				df.loc[team,'WODdisplay1'] = f'TC ({r1} reps)'
+				df.loc[team,'WODdisplay1'] = f'TC ({int(r1)} reps)'
 		for team in df.index:
 			r1 = df['T2B'][team]
 			r2 = df['Erg'][team]
